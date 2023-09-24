@@ -32,9 +32,6 @@ func TestTransferTx(t *testing.T) {
 				Amount:        amount,
 			})
 
-			if err != nil {
-				fmt.Println("ERRORE!!", txName, err)
-			}
 			errs <- err
 			results <- result
 
