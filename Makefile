@@ -18,6 +18,10 @@ migrate_up: ## migrate the database schema up
 migrate_down:
 	migrate -path db/migration -database "postgresql://root:root@localhost:5432/work_simplebank?sslmode=disable" -verbose down
 
+.PHONY: test
+test:
+	go test -v -cover ./...
+
 .PHONY: sqlc
 sqlc: ## generate sqlc code
 	sqlc generate
