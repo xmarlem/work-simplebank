@@ -1,0 +1,4 @@
+dbDriver: "postgres"
+dbSource: "postgresql://root:root@localhost:5432/work_simplebank?sslmode=disable"
+serverAddress: "0.0.0.0:8081"
+someOther: asdfadsf
