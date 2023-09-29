@@ -10,5 +10,7 @@ Fa anche vedere praticamente cosa succede settando i vari isolation level dirett
 Fa partire due terminal e gioca con due transazioni...
 `psql -h localhost -U postgres -d work_simplebank`
 
+Facendo vedere come funziona con i vari isolation level... e.g. una transazione vede o non vede quello che fa l'altra...
 
-e
+
+Latest: #10
