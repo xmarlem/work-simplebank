@@ -17,16 +17,16 @@ func NewServer(store db.Store) *Server {
 		router: gin.Default(),
 	}
 
-	v1alpha1 := server.router.Group("/v1alpha1")
-	{
-		v1alpha1.POST("/accounts", server.createAccount)
-		v1alpha1.GET("/accounts/:id", server.getAccount)
-		v1alpha1.GET("/accounts", server.listAccount)
-	}
+	// v1alpha1 := server.router.Group("/v1alpha1")
+	// {
+	//  v1alpha1.POST("/accounts", server.createAccount)
+	//  v1alpha1.GET("/accounts/:id", server.getAccount)
+	//  v1alpha1.GET("/accounts", server.listAccount)
+	// }
 
-	// server.router.POST("/accounts", server.createAccount)
-	// server.router.GET("/accounts/:id", server.getAccount)
-	// server.router.GET("/accounts", server.listAccount)
+	server.router.POST("/accounts", server.createAccount)
+	server.router.GET("/accounts/:id", server.getAccount)
+	server.router.GET("/accounts", server.listAccount)
 	return server
 }
 

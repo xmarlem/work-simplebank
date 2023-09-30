@@ -33,3 +33,7 @@ help: ## help
 .PHONY: server
 server:
 	go run main.go
+
+.PHONY:
+mock:
+	mockgen -package mockdb -destination db/mock/store.go work-simplebank/db/sqlc Store
