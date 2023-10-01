@@ -14,9 +14,18 @@ dropdb: ## delete the database in postgres
 migrate_up: ## migrate the database schema up
 	migrate -path db/migration -database "postgresql://root:root@localhost:5432/work_simplebank?sslmode=disable" -verbose up
 
-.PHONY: migrate.down
+.PHONY: migrate_up1
+migrate_up1: ## migrate the database schema up to version 1
+	migrate -path db/migration -database "postgresql://root:root@localhost:5432/work_simplebank?sslmode=disable" -verbose up 1
+
+.PHONY: migrate.down ## migrate the database schema down
 migrate_down:
 	migrate -path db/migration -database "postgresql://root:root@localhost:5432/work_simplebank?sslmode=disable" -verbose down
+
+.PHONY: migrate.down1 ## migrate the database schema down to version 1
+migrate_down1:
+	migrate -path db/migration -database "postgresql://root:root@localhost:5432/work_simplebank?sslmode=disable" -verbose down 1
+
 
 .PHONY: test
 test:
