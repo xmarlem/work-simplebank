@@ -29,7 +29,6 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 		config:     config,
 		store:      store,
 		tokenMaker: tokenMaker,
-		router:     gin.Default(),
 	}
 
 	// con binding.Validator.Engine() ottengo il validator che gin sta usando correntemente
@@ -43,15 +42,20 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 	//  v1alpha1.GET("/accounts", server.listAccount)
 	// }
 
-	server.router.POST("/accounts", server.createAccount)
-	server.router.GET("/accounts/:id", server.getAccount)
-	server.router.GET("/accounts", server.listAccount)
-	server.router.POST("/transfers", server.createTransfer)
-	server.router.POST("/users", server.createUser)
-	server.router.POST("/users/login", server.loginUser)
+	server.setupRouter()
 	return server, nil
 }
 
 func (server *Server) Start(address string) error {
 	return server.router.Run(address)
+}
+
+func (server *Server) setupRouter() {
+	router := gin.Default()
+	router.GET("/accounts/:id", server.getAccount)
+	router.GET("/accounts", server.listAccount)
+	router.POST("/transfers", server.createTransfer)
+	router.POST("/users", server.createUser)
+	router.POST("/users/login", server.loginUser)
+	server.router = router
 }
