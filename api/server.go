@@ -53,6 +53,7 @@ func (server *Server) Start(address string) error {
 func (server *Server) setupRouter() {
 	router := gin.Default()
 	router.GET("/accounts/:id", server.getAccount)
+	router.POST("/accounts", server.createAccount)
 	router.GET("/accounts", server.listAccount)
 	router.POST("/transfers", server.createTransfer)
 	router.POST("/users", server.createUser)
