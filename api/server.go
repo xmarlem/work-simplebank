@@ -1,22 +1,35 @@
 package api
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 
 	db "work-simplebank/db/sqlc"
+	"work-simplebank/token"
+	"work-simplebank/util"
 )
 
 type Server struct {
-	store  db.Store
-	router *gin.Engine
+	config     util.Config
+	store      db.Store
+	tokenMaker token.Maker
+	router     *gin.Engine
 }
 
-func NewServer(store db.Store) *Server {
+func NewServer(config util.Config, store db.Store) (*Server, error) {
+	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey) // empty string as placeholder
+	if err != nil {
+		return nil, fmt.Errorf("cannot create token maker: %v", err)
+	}
+
 	server := &Server{
-		store:  store,
-		router: gin.Default(),
+		config:     config,
+		store:      store,
+		tokenMaker: tokenMaker,
+		router:     gin.Default(),
 	}
 
 	// con binding.Validator.Engine() ottengo il validator che gin sta usando correntemente
@@ -35,7 +48,8 @@ func NewServer(store db.Store) *Server {
 	server.router.GET("/accounts", server.listAccount)
 	server.router.POST("/transfers", server.createTransfer)
 	server.router.POST("/users", server.createUser)
-	return server
+	server.router.POST("/users/login", server.loginUser)
+	return server, nil
 }
 
 func (server *Server) Start(address string) error {

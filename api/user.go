@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 	"time"
@@ -19,12 +20,23 @@ type createUserRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 }
 
-type createUserResponse struct {
+type userResponse struct {
 	Username          string    `json:"username"`
 	Fullname          string    `json:"fullname"`
 	Email             string    `json:"email"`
 	PasswordChangedAt time.Time `json:"password_changed_at"`
 	CreatedAt         time.Time `json:"created_at"`
+}
+
+// usiamo questo stratagemma per convertire un user dal db in una response perche' ci sono dati che non vogliamo vengano esposti, tipo la password
+func newUserResponse(user db.User) *userResponse {
+	return &userResponse{
+		Username:          user.Username,
+		Fullname:          user.Fullname,
+		Email:             user.Email,
+		PasswordChangedAt: user.PasswordChangedAt,
+		CreatedAt:         user.CreatedAt,
+	}
 }
 
 func (server *Server) createUser(ctx *gin.Context) {
@@ -63,12 +75,62 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	resp := createUserResponse{
-		Username:          u.Username,
-		Fullname:          u.Fullname,
-		Email:             u.Email,
-		PasswordChangedAt: u.PasswordChangedAt,
-		CreatedAt:         u.CreatedAt,
+	resp := newUserResponse(u)
+
+	// resp := userResponse{
+	//  Username:          u.Username,
+	//  Fullname:          u.Fullname,
+	//  Email:             u.Email,
+	//  PasswordChangedAt: u.PasswordChangedAt,
+	//  CreatedAt:         u.CreatedAt,
+	// }
+	ctx.JSON(http.StatusOK, resp)
+}
+
+type loginUserRequest struct {
+	Username string `json:"username" binding:"required,alphanum"`
+	Password string `json:"password" binding:"required,min=6"`
+}
+
+type loginUserResponse struct {
+	AccessToken string       `json:"access_token"`
+	User        userResponse `json:"user"`
+}
+
+func (s *Server) loginUser(ctx *gin.Context) {
+	var req loginUserRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
 	}
+
+	user, err := s.store.GetUsers(ctx, req.Username)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	if err := util.ChecksumPassword(req.Password, user.HashedPassword); err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	accessToken, err := s.tokenMaker.CreateToken(req.Username, s.config.AccessTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	resp := loginUserResponse{
+		AccessToken: accessToken,
+		User:        *newUserResponse(user),
+	}
+
 	ctx.JSON(http.StatusOK, resp)
 }
